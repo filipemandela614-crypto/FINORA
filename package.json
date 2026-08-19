@@ -1,0 +1,1 @@
+{"name":"finora-smart-finance","version":"1.0.0","private":true,"description":"FINORA Smart Finance Android app","scripts":{"build:web":"mkdir -p www && cp index.html app.html manifest.json sw.js icon-192.svg icon-512.svg www/"},"dependencies":{"@capacitor/android":"latest","@capacitor/core":"latest"},"devDependencies":{"@capacitor/cli":"latest"}}
