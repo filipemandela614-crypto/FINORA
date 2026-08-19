@@ -1,0 +1,62 @@
+name: Build FINORA iOS
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'index.html'
+      - 'app.html'
+      - 'manifest.json'
+      - 'sw.js'
+      - 'icon-*.svg'
+      - 'package.json'
+      - 'capacitor.config.json'
+      - '.github/workflows/build-ios.yml'
+
+jobs:
+  build-ios:
+    runs-on: macos-15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare web assets
+        run: npm run build:web
+
+      - name: Add iOS platform
+        run: npx cap add ios
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Build unsigned iOS archive
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/FINORA.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            archive
+
+      - name: Package iOS archive
+        run: ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/FINORA.xcarchive" "$RUNNER_TEMP/FINORA-iOS-unsigned.zip"
+
+      - name: Upload FINORA iOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: FINORA-iOS-unsigned
+          path: ${{ runner.temp }}/FINORA-iOS-unsigned.zip
+          if-no-files-found: error
+          retention-days: 30
