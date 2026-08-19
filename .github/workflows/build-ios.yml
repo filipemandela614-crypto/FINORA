@@ -39,19 +39,29 @@ jobs:
       - name: Sync Capacitor iOS
         run: npx cap sync ios
 
-      - name: Build unsigned iOS archive
+      - name: Verify generated iOS project
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          test -f ios/App/App.xcodeproj/project.pbxproj
+          xcodebuild -version
+
+      - name: Build iOS project without signing
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -project App.xcodeproj \
             -scheme App \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath "$RUNNER_TEMP/FINORA.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/FINORA-derived" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            archive
+            build
 
-      - name: Package iOS archive
-        run: ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/FINORA.xcarchive" "$RUNNER_TEMP/FINORA-iOS-unsigned.zip"
+      - name: Package iOS application
+        run: |
+          APP_PATH="$RUNNER_TEMP/FINORA-derived/Build/Products/Release-iphoneos/App.app"
+          test -d "$APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$RUNNER_TEMP/FINORA-iOS-unsigned.zip"
 
       - name: Upload FINORA iOS build
         uses: actions/upload-artifact@v4
