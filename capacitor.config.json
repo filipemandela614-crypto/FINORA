@@ -1,1 +1,7 @@
-{"appId":"ao.finora.smartfinance","appName":"FINORA","webDir":"www","server":{"androidScheme":"https"}}
+{
+  "appId":"ao.finora.smartfinance",
+  "appName":"FINORA",
+  "webDir":"www",
+  "server":{"androidScheme":"https"},
+  "ios":{"scheme":"App"}
+}
